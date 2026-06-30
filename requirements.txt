@@ -1,0 +1,8 @@
+# Python 3.13 (ambiente de produção: 3.13.13)
+# Versões fixadas correspondentes às que geraram os resultados publicados.
+pandas==3.0.4
+numpy==2.5.0
+statsmodels==0.14.6
+pyarrow==24.0.0
+scipy==1.18.0
+matplotlib==3.11.0

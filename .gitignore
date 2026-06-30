@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# OS
+.DS_Store
+
+# Microdados e dados brutos (NUNCA versionar)
+data/
+*.parquet
+*.dbc
+*.csv.gz
+outputs/**/*.parquet
+
+# Cache de amostras intermediárias geradas pelo pipeline
+.cache/
+
+# Saídas regeneráveis (tabelas/figuras/relatórios) — ver README "Como reproduzir"
+outputs/
+
+# Logs de execução (contêm caminhos locais)
+logs/
+
+# Referência interna do colaborador (bundle inédito RSP-2026-7625) — NÃO publicar
+ref_clarimar/
+
+# Documentação interna de trabalho (caminhos locais)
+00_docs/
