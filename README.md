@@ -11,6 +11,51 @@ probabilities, and heterogeneity / sensitivity analyses.
 > **No individual-level data are included in this repository.** Only code is
 > distributed here; all microdata are public and obtained from DATASUS (see below).
 
+---
+
+## Radar semanal de editais (Claude Code Routines)
+
+Além do código analítico do artigo, este repositório serve de **base para uma
+routine semanal de varredura de editais de pesquisa**, executada via
+[Claude Code Routines](https://code.claude.com/docs/en/claude-code-on-the-web).
+
+**Propósito.** A cada semana, o Claude Code varre um conjunto de fontes de
+fomento (FAPESP, CNPq, CAPES, Finep, Google.org e outras), compara as chamadas
+abertas com o perfil do pesquisador e produz um relatório classificando os
+editais por **aderência** (Alta / Média / Baixa), com prazo, valor,
+elegibilidade e link. O objetivo é não perder oportunidades de financiamento
+alinhadas às linhas de pesquisa (clima e saúde materno-perinatal, disparidades
+em saúde, saúde digital) e às vias de elegibilidade (doutorando UNICAMP e
+2SLH Tech LTDA).
+
+**Estrutura do radar:**
+
+```
+perfil.md            perfil do pesquisador — critérios de matching e elegibilidade
+fontes.md            fontes monitoradas (URL + seção relevante) e expansão futura
+resultados/          relatórios semanais gerados pela routine
+  README.md          padrão de nomenclatura e estrutura dos relatórios
+  editais_YYYY-MM-DD.md   um relatório por varredura (data ISO 8601)
+```
+
+**Como funciona (visão geral):**
+
+1. A routine lê `perfil.md` (o que procurar / elegibilidade) e `fontes.md`
+   (onde procurar).
+2. Varre cada fonte, extrai as chamadas abertas e avalia a aderência ao perfil.
+3. Grava o resultado em `resultados/editais_YYYY-MM-DD.md`, ordenado por
+   aderência.
+
+Para ajustar o alvo da varredura, edite `perfil.md`; para incluir novas fontes,
+edite `fontes.md` (seção "Outras fontes").
+
+---
+
+## Análise (RSP-2026-7625)
+
+O restante deste README descreve o pipeline analítico do artigo sobre
+desigualdades raciais em prematuridade no Centro-Oeste (2015–2024).
+
 ## Data source
 
 - **SINASC** (Sistema de Informações sobre Nascidos Vivos), DATASUS — public
