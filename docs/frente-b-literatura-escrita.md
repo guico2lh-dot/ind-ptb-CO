@@ -15,10 +15,27 @@ O que circula é texto do manuscrito e metadado bibliográfico.
 Duas formas, que se complementam. A primeira é obrigatória — a segunda depende
 dela.
 
+### 1.0 A UNICAMP já paga por isso
+
+A integração Git é recurso premium do Overleaf — e **a UNICAMP assinou o
+Overleaf Commons**, que entrega o conjunto premium a toda a comunidade com
+vínculo ativo. A documentação do Overleaf é explícita: a integração Git está
+disponível para participantes do Commons, membros de assinaturas de grupo e
+assinantes individuais.
+
+- **Elegibilidade:** e-mail `@unicamp.br` ou subdomínio, vínculo ativo.
+- **Vigência:** 36 meses a partir de janeiro de 2026 (disponível desde
+  2026-02-09).
+- **Como ativar:** entrar no Overleaf com as credenciais institucionais.
+
+Ou seja: para o doutorado na FCM, o git bridge, os 10+ colaboradores, o
+track changes e o histórico completo saem de graça. Antes de assinar
+qualquer plano individual, confirme que sua conta está reconhecida como
+institucional — o portal da DETIC/SBU tem as instruções.
+
 ### 1.1 Git bridge (a base)
 
-A integração Git do Overleaf é **recurso pago** (Overleaf Cloud premium; no
-Server Pro, versão 4.0+). Ela expõe o projeto como um repositório Git comum.
+A integração Git expõe o projeto como um repositório Git comum.
 
 1. Overleaf → **Account Settings → Git Integration → Create Token**.
    Guarde o token: ele não é exibido de novo.
@@ -96,13 +113,24 @@ entre si — atuam em camadas diferentes do texto.
 | Etapa | Ferramenta | O que ela resolve |
 |---|---|---|
 | Rascunho, e-mail, texto não acadêmico | **Grammarly** | Gramática e tom geral. Não conhece registro acadêmico: sugere simplificações que um revisor de periódico lê como imprecisão. |
-| Manuscrito em LaTeX/Word | **Writefull** | Compara o seu fraseado com um corpus de artigos publicados. Integração nativa no Overleaf (mesmo grupo, Digital Science): lê através do markup sem corromper fórmula nem `\cite{}`. |
+| Manuscrito em LaTeX/Word | **Writefull** | Compara o seu fraseado com um corpus de artigos publicados. Integrado **nativamente** ao Overleaf — Writefull e Overleaf são empresas irmãs no grupo Digital Science, e a integração dispensa extensão. Lê através do markup sem corromper fórmula nem `\cite{}`. Também tem add-in de Word. |
 | Polimento final e verificação | **Paperpal** | Feedback de estrutura no documento inteiro e checagem de plágio antes da submissão. |
 
-**Recomendação para o seu fluxo:** Writefull como assinatura principal, dentro
-do Overleaf. Grammarly não cobre o que o Writefull cobre — se for para manter
-só um para o manuscrito, é o Writefull. O Paperpal entra pontualmente, na
-véspera da submissão.
+**Recomendação para o seu fluxo:** Writefull dentro do Overleaf. Grammarly não
+cobre o que o Writefull cobre — se for para manter só um para o manuscrito, é
+o Writefull.
+
+**Antes de pagar os ~US$ 150/ano do Writefull Premium**, pergunte à DETIC/SBU
+se a UNICAMP também licencia o Writefull. A licença institucional dele cobre
+Writefull for Overleaf, for Word, Revise e Cite para toda a comunidade, e é
+contratada à parte do Overleaf Commons — não vem junto automaticamente, mas
+instituições que já assinam o Overleaf são o público natural dela. Vale o
+e-mail antes de gastar.
+
+**Paperpal** (~US$ 139/ano) só entra se aparecer uma destas necessidades:
+escrever em **Google Docs** (o Writefull não cobre), **tradução PT→EN**, ou os
+**pre-submission checks** — cuja lista de periódicos cobertos vale confirmar
+antes, já que é o recurso que justificaria a assinatura.
 
 Nenhum dos três decide AE vs BE por você. Isso continua sendo regra de
 projeto:
@@ -148,6 +176,12 @@ independente**, e o método da sua revisão continua tendo que dizer isso.
 ## Fontes
 
 - [Overleaf — Git integration](https://docs.overleaf.com/integrations-and-add-ons/git-integration-and-github-synchronization/git-integration)
+- [Overleaf — Git é premium, disponível a participantes do Commons](https://docs.overleaf.com/integrations-and-add-ons/git-integration-and-github-synchronization/git)
+- [Overleaf Commons — o que a assinatura institucional entrega](https://docs.overleaf.com/commons)
+- [UNICAMP/DETIC — Overleaf Commons liberado para a comunidade](https://www.detic.unicamp.br/2026/02/06/unicamp-libera-acesso-a-plataforma-overleaf-commons-para-toda-a-comunidade-universitaria/)
+- [Overleaf — Writefull agora integrado, sem extensão](https://www.overleaf.com/blog/update-writefull-is-now-integrated-with-overleaf-no-extension-needed)
+- [Writefull — licença institucional (Overleaf, Word, Revise, Cite)](https://www.writefull.com/for-institutions-overleaf)
+- [Paperpal — preços oficiais](https://support.paperpal.com/support/solutions/articles/3000126443-what-is-the-price-for-paperpal-paid-subscriptions-)
 - [Overleaf — Git integration authentication tokens](https://docs.overleaf.com/integrations-and-add-ons/git-integration-and-github-synchronization/git-integration/git-integration-authentication-tokens)
 - [OverleafMCP (mjyoo2)](https://github.com/mjyoo2/overleafmcp)
 - [zotero-mcp (kujenga)](https://github.com/kujenga/zotero-mcp)
