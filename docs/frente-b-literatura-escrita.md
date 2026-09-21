@@ -1,7 +1,10 @@
 # Frente B — literatura, escrita e submissão
 
-Setup da camada que liga o Claude ao manuscrito e à bibliografia, mais o
-critério de qual corretor usar em cada etapa. Escopo: os artigos do CliMaterna
+Critério: **qual** ferramenta usar em cada etapa e por quê. O passo a passo
+de montagem está no runbook irmão,
+[`setup-zotero-overleaf.md`](setup-zotero-overleaf.md).
+
+Escopo: os artigos do CliMaterna
 e o RSP-2026-7625 deste repositório.
 
 Nada aqui toca nos microdados. A regra que vale para tudo neste documento:
@@ -160,7 +163,39 @@ independente**, e o método da sua revisão continua tendo que dizer isso.
 
 ---
 
-## 5. Checklist de instalação
+## 5. Análise e integridade de referências
+
+Três camadas, e só a última custa dinheiro.
+
+**Zotero + Retraction Watch (grátis, contínuo).** A verificação é automática:
+item retratado aparece sinalizado na biblioteca, com o motivo no painel. Pelo
+plugin de Word/Docs, ele ainda avisa no momento de citar e quando algo já
+citado é retratado depois. **Funciona apenas para itens com DOI ou PMID** —
+cerca de 3/4 da base do Retraction Watch. Daí a regra de identificador
+obrigatória do runbook.
+
+**A lacuna do trilho LaTeX.** Citando via `.bib`, o aviso no momento da
+citação não existe — só a marcação na biblioteca. Quem escreve em Overleaf
+perde a rede e precisa da varredura manual antes de submeter.
+
+**scite Reference Check (pontual).** Sobe o manuscrito e audita as
+referências contra retratações, erratas e avisos editoriais. Junto vem o
+Smart Citations: para cada artigo, quantas citações o **apoiam**, quantas o
+**contrastam** e quantas apenas o **mencionam**, com o trecho exato — citar
+um achado já contrariado é erro de argumento, não de formatação. ~US$ 12/mês
+no anual, com trial de 7 dias.
+
+> Não assine no anual. Use o trial no próximo manuscrito e, se provar valor,
+> pague por mês nos ciclos de submissão. Há desconto acadêmico ao recomendar
+> à instituição — mande junto com a pergunta sobre o Writefull.
+
+A classificação supporting/contrasting é automática e vem com percentual de
+confiança: trate como triagem, não como veredito. A base metodológica está
+publicada em *Quantitative Science Studies*.
+
+---
+
+## 6. Checklist de instalação
 
 - [ ] Token Git do Overleaf criado e guardado (não versionar)
 - [ ] `git clone https://git.overleaf.com/<PROJECT_ID>` funciona
@@ -170,6 +205,7 @@ independente**, e o método da sua revisão continua tendo que dizer isso.
 - [ ] Teste de fumaça: pedir `get_sections` do manuscrito e uma busca no Zotero
 - [ ] Writefull instalado no Overleaf, com a variante AE/BE do periódico-alvo
 - [ ] Hábito travado: compilar no Overleaf depois de toda escrita automática
+- [ ] Busca salva `!sem-identificador` do Zotero criada e zerada (ver runbook)
 
 ---
 
@@ -187,3 +223,8 @@ independente**, e o método da sua revisão continua tendo que dizer isso.
 - [zotero-mcp (kujenga)](https://github.com/kujenga/zotero-mcp)
 - [Evaluating the use of AI in systematic review abstract screening — *Systematic Reviews*, 2026](https://link.springer.com/article/10.1186/s13643-026-03313-8)
 - [Rayyan](https://www.rayyan.ai/)
+- [Zotero — notificações de retratação (Retraction Watch)](https://www.zotero.org/blog/retracted-item-notifications/)
+- [scite — features e Reference Check](https://scite.ai/features)
+- [scite — preços](https://scite.ai/pricing)
+- [scite: a smart citation index — *Quantitative Science Studies*](https://direct.mit.edu/qss/article/2/3/882/102990/scite-A-smart-citation-index-that-displays-the)
+- [Runbook de montagem](setup-zotero-overleaf.md)

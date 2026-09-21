@@ -3,7 +3,14 @@
     "Servidores MCP deste projeto — manuscrito no Overleaf e biblioteca no Zotero.",
     "Copie para .mcp.json (já ignorado pelo git) e exporte as variáveis abaixo.",
     "NUNCA escreva token direto neste arquivo: a sintaxe ${VAR} lê do ambiente.",
-    "Setup completo em docs/frente-b-literatura-escrita.md"
+    "",
+    "Zotero em modo local (padrão abaixo): exige a API local ligada em",
+    "Settings > Advanced e o Zotero aberto. A biblioteca não sai da máquina.",
+    "Para alcançar um GRUPO de outra máquina, troque para o modo Web API:",
+    "ZOTERO_LOCAL='false', ZOTERO_API_KEY=<chave de zotero.org/settings/keys>,",
+    "ZOTERO_LIBRARY_ID=<id do grupo>, ZOTERO_LIBRARY_TYPE='group'.",
+    "",
+    "Passo a passo completo em docs/setup-zotero-overleaf.md"
   ],
   "mcpServers": {
     "overleaf": {
@@ -20,7 +27,8 @@
       "env": {
         "ZOTERO_LOCAL": "true",
         "ZOTERO_API_KEY": "",
-        "ZOTERO_LIBRARY_ID": ""
+        "ZOTERO_LIBRARY_ID": "",
+        "ZOTERO_LIBRARY_TYPE": "user"
       }
     }
   }
