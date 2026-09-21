@@ -1,0 +1,155 @@
+# Frente B — literatura, escrita e submissão
+
+Setup da camada que liga o Claude ao manuscrito e à bibliografia, mais o
+critério de qual corretor usar em cada etapa. Escopo: os artigos do CliMaterna
+e o RSP-2026-7625 deste repositório.
+
+Nada aqui toca nos microdados. A regra que vale para tudo neste documento:
+**microdado do SINASC e dado de beneficiário não entram em ferramenta SaaS**.
+O que circula é texto do manuscrito e metadado bibliográfico.
+
+---
+
+## 1. Overleaf ligado ao Claude
+
+Duas formas, que se complementam. A primeira é obrigatória — a segunda depende
+dela.
+
+### 1.1 Git bridge (a base)
+
+A integração Git do Overleaf é **recurso pago** (Overleaf Cloud premium; no
+Server Pro, versão 4.0+). Ela expõe o projeto como um repositório Git comum.
+
+1. Overleaf → **Account Settings → Git Integration → Create Token**.
+   Guarde o token: ele não é exibido de novo.
+2. O `PROJECT_ID` está na URL do projeto:
+   `https://www.overleaf.com/project/<PROJECT_ID>`.
+3. Clone:
+
+   ```bash
+   git clone https://git.overleaf.com/<PROJECT_ID> manuscrito
+   ```
+
+   Usuário: `git`. Senha: **o token** — autenticação por usuário/senha da conta
+   foi descontinuada; token é o único método hoje.
+
+Com isso o Claude Code já lê e edita o `.tex` como qualquer arquivo do
+repositório, e `git push` devolve para o Overleaf. Para sessões longas de
+escrita, esse caminho basta e é o mais previsível: o diff é o de sempre.
+
+### 1.2 Servidor MCP (edição por seção)
+
+Por cima do git bridge, o MCP dá ao Claude as operações que interessam num
+manuscrito — listar seções, ler uma seção isolada, reescrever só a Discussion
+sem carregar o documento inteiro no contexto.
+
+```bash
+export OVERLEAF_PROJECT_ID=...      # da URL do projeto
+export OVERLEAF_GIT_TOKEN=...       # o token do passo 1.1
+cp .mcp.json.example .mcp.json      # .mcp.json é git-ignored
+```
+
+Ferramentas expostas: `list_files`, `read_file`, `get_sections`,
+`get_section_content`, `status_summary`, `write_file`, `write_section`
+(esta última já faz o commit no git do Overleaf).
+
+**Antes de aceitar escrita automática**, trave o hábito: compile no Overleaf
+depois de cada `write_section`. Um `\cite{}` quebrado ou um ambiente `table`
+mal fechado só aparece na compilação, e o MCP não compila.
+
+> Existem várias implementações de MCP para Overleaf, com escopos diferentes
+> (só leitura, CRUD completo, verificação de citações). O molde em
+> `.mcp.json.example` usa a de edição por seção via git. Nenhuma é oficial do
+> Overleaf — são projetos de terceiros, avalie antes de dar acesso de escrita
+> a um manuscrito em revisão.
+
+---
+
+## 2. Zotero ligado ao Claude
+
+Objetivo específico: **o Claude só cita o que você já leu e validou**. Isso
+ataca diretamente o risco de referência inventada, porque a busca passa a ser
+na sua biblioteca, não na memória do modelo.
+
+Modo local (recomendado — a biblioteca não sai da máquina):
+
+1. Zotero → **Settings → Advanced → Allow other applications on this computer
+   to communicate with Zotero** (API local).
+2. Deixe o Zotero aberto. A entrada `zotero` do `.mcp.json.example` já vem
+   configurada com `ZOTERO_LOCAL=true` e não precisa de chave de API.
+
+Ferramentas: `zotero_search_items`, `zotero_item_metadata`,
+`zotero_item_fulltext` (lê o PDF anexado). Somente leitura — o servidor não
+escreve na sua biblioteca, o que é a propriedade que você quer aqui.
+
+Modo Web API (biblioteca de grupo, ou várias máquinas): gere a chave em
+<https://www.zotero.org/settings/keys> e preencha `ZOTERO_API_KEY` e
+`ZOTERO_LIBRARY_ID`. Nesse modo os metadados trafegam pela API do Zotero.
+
+---
+
+## 3. Qual corretor em qual etapa
+
+O erro comum é usar uma ferramenta só para tudo. As três abaixo não competem
+entre si — atuam em camadas diferentes do texto.
+
+| Etapa | Ferramenta | O que ela resolve |
+|---|---|---|
+| Rascunho, e-mail, texto não acadêmico | **Grammarly** | Gramática e tom geral. Não conhece registro acadêmico: sugere simplificações que um revisor de periódico lê como imprecisão. |
+| Manuscrito em LaTeX/Word | **Writefull** | Compara o seu fraseado com um corpus de artigos publicados. Integração nativa no Overleaf (mesmo grupo, Digital Science): lê através do markup sem corromper fórmula nem `\cite{}`. |
+| Polimento final e verificação | **Paperpal** | Feedback de estrutura no documento inteiro e checagem de plágio antes da submissão. |
+
+**Recomendação para o seu fluxo:** Writefull como assinatura principal, dentro
+do Overleaf. Grammarly não cobre o que o Writefull cobre — se for para manter
+só um para o manuscrito, é o Writefull. O Paperpal entra pontualmente, na
+véspera da submissão.
+
+Nenhum dos três decide AE vs BE por você. Isso continua sendo regra de
+projeto:
+
+| Periódico-alvo | Variante | Detalhes operacionais |
+|---|---|---|
+| JESEE (Nature Portfolio), PLOS Climate, AJOG, AJPH | **American English** | `-ize`, "data is", `1,234,567`, `Dr` sem ponto |
+| The Lancet Planetary Health, BMJ, BJOG | **British English** | `-ise`, "data are", ponto médio (`1·234·567`, `p<0·0001`), `Dr.` com ponto |
+
+Configure a variante **no Writefull, por projeto** — ele checa contra o corpus
+da variante escolhida, e trocar no meio do manuscrito produz inconsistência
+que revisor nota.
+
+---
+
+## 4. Triagem de revisão (quando houver revisão sistemática)
+
+- **Rayyan** — gratuito, colaborativo, triagem cega, deduplicação e diagrama
+  PRISMA no plano Essential. É o padrão quando há mais de um revisor.
+- **Elicit** — melhor para volume alto e apoio à extração de dados.
+
+**Limite conhecido, e ele é grande:** um estudo comparativo publicado em
+*Systematic Reviews* (2026) avaliou as ferramentas gratuitas de triagem e
+nenhuma identificou mais de 50% dos estudos incluídos nos primeiros 25% da
+triagem. Ou seja: aceleram a ordenação, **não substituem dupla revisão
+independente**, e o método da sua revisão continua tendo que dizer isso.
+
+---
+
+## 5. Checklist de instalação
+
+- [ ] Token Git do Overleaf criado e guardado (não versionar)
+- [ ] `git clone https://git.overleaf.com/<PROJECT_ID>` funciona
+- [ ] `cp .mcp.json.example .mcp.json` com `OVERLEAF_*` exportados
+- [ ] API local do Zotero habilitada, Zotero aberto
+- [ ] `claude mcp list` mostra `overleaf` e `zotero` conectados
+- [ ] Teste de fumaça: pedir `get_sections` do manuscrito e uma busca no Zotero
+- [ ] Writefull instalado no Overleaf, com a variante AE/BE do periódico-alvo
+- [ ] Hábito travado: compilar no Overleaf depois de toda escrita automática
+
+---
+
+## Fontes
+
+- [Overleaf — Git integration](https://docs.overleaf.com/integrations-and-add-ons/git-integration-and-github-synchronization/git-integration)
+- [Overleaf — Git integration authentication tokens](https://docs.overleaf.com/integrations-and-add-ons/git-integration-and-github-synchronization/git-integration/git-integration-authentication-tokens)
+- [OverleafMCP (mjyoo2)](https://github.com/mjyoo2/overleafmcp)
+- [zotero-mcp (kujenga)](https://github.com/kujenga/zotero-mcp)
+- [Evaluating the use of AI in systematic review abstract screening — *Systematic Reviews*, 2026](https://link.springer.com/article/10.1186/s13643-026-03313-8)
+- [Rayyan](https://www.rayyan.ai/)

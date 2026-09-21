@@ -1,0 +1,27 @@
+{
+  "_comment": [
+    "Servidores MCP deste projeto — manuscrito no Overleaf e biblioteca no Zotero.",
+    "Copie para .mcp.json (já ignorado pelo git) e exporte as variáveis abaixo.",
+    "NUNCA escreva token direto neste arquivo: a sintaxe ${VAR} lê do ambiente.",
+    "Setup completo em docs/frente-b-literatura-escrita.md"
+  ],
+  "mcpServers": {
+    "overleaf": {
+      "command": "npx",
+      "args": ["-y", "@mjyoo2/overleaf-mcp"],
+      "env": {
+        "OVERLEAF_PROJECT_ID": "${OVERLEAF_PROJECT_ID}",
+        "OVERLEAF_GIT_TOKEN": "${OVERLEAF_GIT_TOKEN}"
+      }
+    },
+    "zotero": {
+      "command": "uvx",
+      "args": ["zotero-mcp@latest"],
+      "env": {
+        "ZOTERO_LOCAL": "true",
+        "ZOTERO_API_KEY": "",
+        "ZOTERO_LIBRARY_ID": ""
+      }
+    }
+  }
+}

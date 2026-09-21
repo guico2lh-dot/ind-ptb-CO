@@ -6,3 +6,10 @@ statsmodels==0.14.6
 pyarrow==24.0.0
 scipy==1.18.0
 matplotlib==3.11.0
+
+# Leitura e validação (ver 01_code/duck_loader.py e 01_code/schemas.py).
+# duckdb é o motor de leitura padrão; para voltar ao caminho original,
+# exporte PTB_ENGINE=pandas (nenhuma das duas bibliotecas é necessária nesse
+# caso, exceto pandera se PTB_VALIDATE continuar ligado).
+duckdb==1.5.5
+pandera[pandas]==0.33.1

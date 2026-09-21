@@ -28,3 +28,7 @@ ref_clarimar/
 
 # Documentação interna de trabalho (caminhos locais)
 00_docs/
+
+# Config MCP preenchida (contém IDs de projeto; token vem do ambiente).
+# Versionamos apenas o molde .mcp.json.example — ver docs/frente-b-literatura-escrita.md
+.mcp.json
