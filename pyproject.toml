@@ -1,0 +1,39 @@
+[project]
+name = "ind-ptb-co"
+version = "1.1.0"
+description = "Racial inequalities in preterm birth in Centro-Oeste Brazil, 2015-2024 (RSP-2026-7625)"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+
+# Espelha requirements.txt. O requirements.txt continua sendo o arquivo
+# canônico das versões que geraram os resultados publicados; este pyproject
+# existe para quem prefere `uv`, que resolve e trava o ambiente inteiro num
+# lockfile (uv.lock) em segundos.
+dependencies = [
+    "pandas==3.0.4",
+    "numpy==2.5.0",
+    "statsmodels==0.14.6",
+    "pyarrow==24.0.0",
+    "scipy==1.18.0",
+    "matplotlib==3.11.0",
+    "duckdb==1.5.5",
+    "pandera[pandas]==0.33.1",
+]
+
+[project.optional-dependencies]
+# Suíte sobre microdados sintéticos + orquestração do pipeline.
+dev = [
+    "pytest>=8.0",
+    "snakemake>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["01_code"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.uv]
+package = false

@@ -5,6 +5,16 @@ para o estudo de desigualdades raciais em prematuridade (SINASC).
 
 Região é parametrizável (Centro-Oeste agora; nacional/indígena depois).
 Raw é SOMENTE LEITURA. Seed 42.
+
+Motor de leitura
+----------------
+`PTB_ENGINE=duckdb` (padrão) filtra a região durante a varredura do Parquet.
+`PTB_ENGINE=pandas` lê o ano inteiro em memória e filtra depois — o caminho
+original, mantido como referência de paridade.
+
+Os dois motores compartilham `_prepare_year()`, que concentra todo o casting;
+a escolha do motor muda apenas COMO as linhas chegam, nunca o que sai.
+Para provar isso sobre os microdados reais: `python 01_code/10_parity_check.py`.
 """
 import os
 import pandas as pd
@@ -12,7 +22,16 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 
+try:
+    import schemas
+except ImportError:  # importado de fora de 01_code/
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    import schemas
+
 SEED = 42
+# Motor de leitura dos Parquet: "duckdb" (padrão) ou "pandas".
+ENGINE = os.environ.get("PTB_ENGINE", "duckdb").strip().lower()
 # Raiz dos microdados SINASC (somente leitura), fora do repositório.
 # Defina a variável de ambiente DATA_ROOT apontando para a pasta com
 # sinasc_2015.parquet … sinasc_2024.parquet (ver README). Fallback: ./data/sinasc
@@ -57,34 +76,83 @@ EDU_CONFIG = {
 def _to_num(series):
     return pd.to_numeric(series.astype("string").str.strip().replace({"": pd.NA}), errors="coerce")
 
-def load_region(prefixes=CO_PREFIXES, years=YEARS, log=print):
-    """Carrega SINASC anual, casta tudo p/ numérico, filtra região por CODMUNRES."""
-    frames = []
+def _prepare_year(df, y, prefixes):
+    """Casting, recorte regional e derivação de ANO para um arquivo anual.
+
+    Compartilhado pelos motores duckdb e pandas — é aqui que mora TODA a
+    lógica de tipos. No caminho duckdb o filtro regional já foi aplicado na
+    varredura, então `keep` é integralmente verdadeiro e a operação é um
+    no-op; recalculá-lo custa pouco e mantém um único ponto de verdade.
+    """
     pref = tuple(prefixes.keys())
-    for y in years:
-        f = RAW / f"sinasc_{y}.parquet"
-        df = pd.read_parquet(f, columns=NEED)
-        # casting explícito homogêneo (2023 é Float/Int, demais String)
-        cod = df["CODMUNRES"].astype("string").str.strip()
-        muni6 = cod.str.zfill(6)
-        uf2 = muni6.str.slice(0, 2)
-        keep = uf2.isin(pref)
-        d = df.loc[keep].copy()
-        d["CODMUNRES"] = muni6[keep]
-        d["UF"] = uf2[keep].map(prefixes)
-        for c in ["RACACORMAE","SEMAGESTAC","ESCMAE","ESCMAE2010","IDADEMAE","CONSULTAS",
-                  "QTDFILVIVO","ESTCIVMAE","GRAVIDEZ","MESPRENAT"]:
-            d[c] = _to_num(d[c])
-        # ano de DTNASC (DDMMAAAA) -> últimos 4 dígitos
-        dt = df.loc[keep, "DTNASC"].astype("string").str.strip().str.zfill(8)
-        d["ANO"] = pd.to_numeric(dt.str.slice(4, 8), errors="coerce")
-        # fallback: usar ano do arquivo se DTNASC inválido
-        d["ANO"] = d["ANO"].where(d["ANO"].between(2015, 2024), y)
-        d["_ano_arquivo"] = y
-        frames.append(d)
-        log(f"  [{y}] CO bruto: {len(d):,} linhas")
+    # casting explícito homogêneo (2023 é Float/Int, demais String)
+    cod = df["CODMUNRES"].astype("string").str.strip()
+    muni6 = cod.str.zfill(6)
+    uf2 = muni6.str.slice(0, 2)
+    keep = uf2.isin(pref)
+    d = df.loc[keep].copy()
+    d["CODMUNRES"] = muni6[keep]
+    d["UF"] = uf2[keep].map(prefixes)
+    for c in ["RACACORMAE","SEMAGESTAC","ESCMAE","ESCMAE2010","IDADEMAE","CONSULTAS",
+              "QTDFILVIVO","ESTCIVMAE","GRAVIDEZ","MESPRENAT"]:
+        d[c] = _to_num(d[c])
+    # ano de DTNASC (DDMMAAAA) -> últimos 4 dígitos
+    dt = df.loc[keep, "DTNASC"].astype("string").str.strip().str.zfill(8)
+    d["ANO"] = pd.to_numeric(dt.str.slice(4, 8), errors="coerce")
+    # fallback: usar ano do arquivo se DTNASC inválido
+    d["ANO"] = d["ANO"].where(d["ANO"].between(2015, 2024), y)
+    d["_ano_arquivo"] = y
+    return d
+
+
+def _read_year(f, prefixes, engine, con):
+    """Lê um arquivo anual pelo motor escolhido, já projetado em NEED."""
+    if engine == "pandas":
+        return pd.read_parquet(f, columns=NEED)
+    import duck_loader
+    return duck_loader.scan_year(f, NEED, tuple(prefixes.keys()), con=con)
+
+
+def load_region(prefixes=CO_PREFIXES, years=None, log=print, engine=None):
+    """Carrega SINASC anual, casta tudo p/ numérico, filtra região por CODMUNRES.
+
+    engine: "duckdb" (padrão, filtro na varredura do Parquet) ou "pandas"
+    (lê o ano inteiro e filtra na memória). Ambos devolvem o mesmo dataframe.
+    """
+    # resolvidos na chamada (e não no def) para que YEARS/RAW possam ser
+    # ajustados em tempo de execução — testes e recortes ad hoc.
+    years = list(YEARS if years is None else years)
+    engine = (engine or ENGINE).strip().lower()
+    if engine not in ("duckdb", "pandas"):
+        raise ValueError(f"PTB_ENGINE inválido: {engine!r} (use 'duckdb' ou 'pandas')")
+
+    con = None
+    if engine == "duckdb":
+        try:
+            import duck_loader
+        except ImportError as exc:
+            raise ImportError(
+                "motor duckdb pedido mas o pacote duckdb não está instalado. "
+                "Instale com `pip install duckdb` (ou `uv sync --extra fast`), "
+                "ou rode com PTB_ENGINE=pandas."
+            ) from exc
+        con = duck_loader.connect()
+
+    log(f"  [engine] leitura via {engine}")
+    frames = []
+    try:
+        for y in years:
+            f = RAW / f"sinasc_{y}.parquet"
+            d = _prepare_year(_read_year(f, prefixes, engine, con), y, prefixes)
+            frames.append(d)
+            log(f"  [{y}] CO bruto: {len(d):,} linhas")
+    finally:
+        if con is not None:
+            con.close()
+
     out = pd.concat(frames, ignore_index=True)
     log(f"  Total região (bruto, todas as raças): {len(out):,}")
+    schemas.validate_region(out, set(prefixes.values()), log=log)
     return out
 
 def build_cascade(df, log=print, edu_var="ESCMAE"):
@@ -131,7 +199,7 @@ def build_cascade(df, log=print, edu_var="ESCMAE"):
         log(f"    cascata {nm}: {n:,}")
     return primaria, sensib, steps, df
 
-def add_derived(d, edu_var="ESCMAE"):
+def add_derived(d, edu_var="ESCMAE", log=print):
     """Adiciona rótulos e variáveis derivadas usadas nos modelos."""
     d = d.copy()
     labels = EDU_CONFIG[edu_var]["labels"]
@@ -156,6 +224,9 @@ def add_derived(d, edu_var="ESCMAE"):
         d["parid_cat"] = pd.Categorical(par, categories=["0","1","2","3","Ign"])
     if "ESTCIVMAE" in d:
         d["estciv_cat"] = pd.Categorical(d["ESTCIVMAE"].astype("Int64").astype(str))
+    # Prova executável da cascata: se algum critério deixou passar faltante ou
+    # valor fora de faixa, a falha aparece aqui e não nas estimativas.
+    schemas.validate_baseB(d, RACA_ORDER, set(NATIONAL_PREFIXES.values()), log=log)
     return d
 
 PROV_TEMPLATE = ("# BASE B (reproducao Forja) | gerado {ts} | script {script} | seed 42 "
